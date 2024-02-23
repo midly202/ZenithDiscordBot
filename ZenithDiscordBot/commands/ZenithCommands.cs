@@ -1,10 +1,7 @@
 ﻿using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DSharpPlus.Entities;
+using ZenithDiscordBot.other;
 
 namespace ZenithDiscordBot.commands
 {
@@ -20,10 +17,94 @@ namespace ZenithDiscordBot.commands
             await ctx.Channel.SendMessageAsync($"Account PFP: {ctx.User.AvatarUrl}");
         }
 
-        [Command("logo")]
-        public async Task logoCommand(CommandContext ctx)
+        [Command("embed1")]
+        public async Task embed1Command(CommandContext ctx)
         {
-            await ctx.Channel.SendMessageAsync($"High resolution discord logo: {ctx.User.DefaultAvatarUrl}!");
+            var message = new DiscordMessageBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+                .WithTitle("First embed method")
+                .WithDescription($"This command was executed by {ctx.User.Mention}")
+                .WithColor(DiscordColor.Aquamarine));
+
+            await ctx.Channel.SendMessageAsync(message);
+        }
+
+        [Command("embed2")]
+        public async Task embed2Command(CommandContext ctx)
+        {
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = "Second embed method",
+                Description = $"This command was executed by {ctx.User.Mention}",
+                Color = DiscordColor.Aquamarine
+            };
+
+            await ctx.Channel.SendMessageAsync(embed: embed);
+        }
+
+        [Command("insult")]
+        public async Task insultCommand(CommandContext ctx)
+        {
+            var embed = new DiscordEmbedBuilder
+            {
+                Title = $"Yo {ctx.User.Username}, you're a bitch",
+                Description = $"This command was executed by {ctx.User.Mention}",
+                Color = DiscordColor.Red
+            };
+
+            var user = ctx.User as DiscordMember;
+            await user.SendMessageAsync(embed: embed);
+        }
+
+
+        [Command("cardgame")]
+        public async Task cardgameCommand(CommandContext ctx)
+        {
+            var userCard = new CardSystem();
+            var botCard = new CardSystem();
+
+            var userCardEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"You drew a {userCard.SelectedCard}",
+            };
+            await ctx.Channel.SendMessageAsync(embed: userCardEmbed);
+
+            var botCardEmbed = new DiscordEmbedBuilder
+            {
+                Title = $"Bot drew a {botCard.SelectedCard}",
+            };
+            await ctx.Channel.SendMessageAsync(embed: botCardEmbed);
+
+            if (userCard.SelectedNumber > botCard.SelectedNumber)
+            {
+                var userWinsEmbed = new DiscordEmbedBuilder
+                {
+                    Title = $"{ctx.User.Username} wins!",
+                    Color = DiscordColor.Aquamarine
+                };
+
+                await ctx.Channel.SendMessageAsync(embed: userWinsEmbed);
+            }
+            else if(userCard.SelectedNumber < botCard.SelectedNumber)
+            {
+                var botWinsEmbed = new DiscordEmbedBuilder
+                {
+                    Title = $"The bot wins!",
+                    Color = DiscordColor.Red
+                };
+
+                await ctx.Channel.SendMessageAsync(embed:  botWinsEmbed);
+            }
+            else
+            {
+                var tieEmbed = new DiscordEmbedBuilder
+                {
+                    Title = $"Tie!",
+                    Color = DiscordColor.CornflowerBlue
+                };
+
+                await ctx.Channel.SendMessageAsync(embed: tieEmbed);
+            }
         }
     }
 }
