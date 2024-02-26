@@ -1,13 +1,15 @@
 ﻿using DSharpPlus;
 using DSharpPlus.CommandsNext;
+using DSharpPlus.Interactivity;
+using DSharpPlus.Interactivity.Extensions;
 using ZenithDiscordBot.commands;
 
 namespace ZenithBot
 {
-    internal class Program
+    public sealed class Program
     {
-        private static DiscordClient Client { get; set; }
-        private static CommandsNextExtension Commands { get; set; }
+        public static DiscordClient Client { get; private set; }
+        public static CommandsNextExtension Commands { get; private set; }
         static async Task Main(string[] args)
         {
             var jsonReader = new ZenithDiscordBot.config.JSONReader();
@@ -22,6 +24,11 @@ namespace ZenithBot
             };
 
             Client = new DiscordClient(discordConfig);
+
+            Client.UseInteractivity(new InteractivityConfiguration()
+            {
+                Timeout = TimeSpan.FromMinutes(2)
+            });
 
             Client.Ready += Client_Ready;
 
