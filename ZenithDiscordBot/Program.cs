@@ -44,7 +44,7 @@ namespace ZenithBot
                 StringPrefixes = new string[] { jsonReader.prefix },
                 EnableMentionPrefix = true,
                 EnableDms = true,
-                EnableDefaultHelp = true, //default help, turn off later
+                EnableDefaultHelp = false,
             };
 
             Commands = Client.UseCommandsNext(commandsConfig);
@@ -64,12 +64,34 @@ namespace ZenithBot
         {
             switch (e.Interaction.Data.CustomId)
             {
-                case "button1":
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{e.User.Username} has pressed button 1"));
+                case "prefixButton":
+
+                    await e.Interaction.DeferAsync();
+                    var prefixButtonEmbed = new DiscordEmbedBuilder
+                    {
+                        Color = DiscordColor.DarkButNotBlack,
+                        Title = "Prefix Commands",
+                        Description = "!help -> Shows a list of all the bot's commands. \n\n" +
+                                      "!whoami -> Returns information about your account. \n\n" +
+                                      "!cardgame -> Draws a random card for both the user and the bot. Whoever's card is worth more, wins. \n\n" +
+                                      "!poll -> Creates a poll with 4 options, results are gathered after 30 seconds. Syntax: !poll Option1 Option2 Option3 Option4 Poll Title"
+                    };
+                    await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(prefixButtonEmbed));
                     break;
-                case "button2":
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, new DiscordInteractionResponseBuilder().WithContent($"{e.User.Username} has pressed button 2"));
+
+                case "slashButton":
+
+                    await e.Interaction.DeferAsync();
+                    var slashButtonEmbed = new DiscordEmbedBuilder
+                    {
+                        Color = DiscordColor.DarkButNotBlack,
+                        Title = "Slash Commands",
+                        Description = "/stalk -> Returns information about specified user's account. \n\n" +
+                                      "/calculator -> Group of commands that allow the user to perform simple arithmatic operations. "
+                    };
+                    await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(slashButtonEmbed));
                     break;
+
             }
         }
 

@@ -10,6 +10,23 @@ namespace ZenithDiscordBot.commands.prefix
 {
     public class ZenithCommands : BaseCommandModule
     {
+        [Command("help")]
+        public async Task helpCommand(CommandContext ctx)
+        {
+            var prefixButton = new DiscordButtonComponent(ButtonStyle.Primary, "prefixButton", "Prefix Commands");
+            var slashButton = new DiscordButtonComponent(ButtonStyle.Success, "slashButton", "Slash Commands");
+
+            var message = new DiscordMessageBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+                .WithColor(DiscordColor.DarkButNotBlack)
+                .WithTitle("Help Section")
+                .WithDescription("Please press a button to view its commands"))
+                .AddComponents(slashButton, prefixButton);
+            
+
+            await ctx.Channel.SendMessageAsync(message);
+        }
+
         [Command("whoami")]
         public async Task whoamiCommand(CommandContext ctx)
         {
@@ -129,22 +146,7 @@ namespace ZenithDiscordBot.commands.prefix
             }
         }
 
-        [Command("firstbuttontest")]
-        public async Task buttonCommand(CommandContext ctx)
-        {
-            var button1 = new DiscordButtonComponent(ButtonStyle.Primary, "button1", "Button 1");
-            var button2 = new DiscordButtonComponent(ButtonStyle.Primary, "button2", "Button 2");
-
-            var message = new DiscordMessageBuilder()
-                .AddEmbed(new DiscordEmbedBuilder()
-                .WithColor(DiscordColor.Violet)
-                .WithTitle("Test embed"))
-                .AddComponents(button1, button2);
-
-            await ctx.Channel.SendMessageAsync(message);
-        }
-
-        [Command("ancientprefixpolltest")] // rewrite as slash command
+        [Command("poll")] // rewrite as slash command
         [RequirePermissions(DSharpPlus.Permissions.Administrator)]
         [RequireGuild]
         [Cooldown(1, 30, CooldownBucketType.Channel)]
