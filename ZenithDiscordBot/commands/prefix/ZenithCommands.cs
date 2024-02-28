@@ -1,11 +1,12 @@
-﻿using DSharpPlus.CommandsNext;
+﻿using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using ZenithBot;
 using ZenithDiscordBot.other;
 
-namespace ZenithDiscordBot.commands
+namespace ZenithDiscordBot.commands.prefix
 {
     public class ZenithCommands : BaseCommandModule
     {
@@ -19,32 +20,37 @@ namespace ZenithDiscordBot.commands
             await ctx.Channel.SendMessageAsync($"Account PFP: {ctx.User.AvatarUrl}");
         }
 
-        [Command("embed1")]
+        [Command("supersecretembed1test")]
+        [RequireGuild]
         public async Task embed1Command(CommandContext ctx)
         {
             var message = new DiscordMessageBuilder()
                 .AddEmbed(new DiscordEmbedBuilder()
                 .WithTitle("First embed method")
                 .WithDescription($"This command was executed by {ctx.User.Mention}")
+                .WithFooter($"This command was executed by {ctx.User.Username}")
                 .WithColor(DiscordColor.Aquamarine));
 
             await ctx.Channel.SendMessageAsync(message);
         }
 
-        [Command("embed2")]
+        [Command("supersecretembed2test")]
+        [RequireGuild]
         public async Task embed2Command(CommandContext ctx)
         {
-            var embed = new DiscordEmbedBuilder
+            var message = new DiscordEmbedBuilder
             {
                 Title = "Second embed method",
                 Description = $"This command was executed by {ctx.User.Mention}",
+                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"This command was executed by {ctx.User.Username}" },
                 Color = DiscordColor.Aquamarine
             };
 
-            await ctx.Channel.SendMessageAsync(embed: embed);
+            await ctx.Channel.SendMessageAsync(embed: message);
         }
 
         [Command("dm")]
+        [RequireGuild]
         public async Task dmCommand(CommandContext ctx)
         {
             var embed = new DiscordEmbedBuilder
@@ -86,7 +92,7 @@ namespace ZenithDiscordBot.commands
 
                 await ctx.Channel.SendMessageAsync(embed: userWinsEmbed);
             }
-            else if(userCard.SelectedNumber < botCard.SelectedNumber)
+            else if (userCard.SelectedNumber < botCard.SelectedNumber)
             {
                 var botWinsEmbed = new DiscordEmbedBuilder
                 {
@@ -94,7 +100,7 @@ namespace ZenithDiscordBot.commands
                     Color = DiscordColor.Red
                 };
 
-                await ctx.Channel.SendMessageAsync(embed:  botWinsEmbed);
+                await ctx.Channel.SendMessageAsync(embed: botWinsEmbed);
             }
             else
             {
@@ -109,6 +115,7 @@ namespace ZenithDiscordBot.commands
         }
 
         [Command("nword")]
+        [RequireGuild]
         public async Task nwordCommand(CommandContext ctx)
         {
             var interactivity = Program.Client.GetInteractivity();
@@ -122,24 +129,29 @@ namespace ZenithDiscordBot.commands
             }
         }
 
-        [Command("react")]
-        public async Task reactCommand(CommandContext ctx)
+        [Command("firstbuttontest")]
+        public async Task buttonCommand(CommandContext ctx)
         {
-            var interactivity = Program.Client.GetInteractivity();
+            var button1 = new DiscordButtonComponent(ButtonStyle.Primary, "button1", "Button 1");
+            var button2 = new DiscordButtonComponent(ButtonStyle.Primary, "button2", "Button 2");
 
-            var messageToReact = await interactivity.WaitForReactionAsync(message => message.Message.Id == 1211326875255963658);
-            
-            if (messageToReact.Result.Message.Id == 1211326875255963658)
-            {
-                await ctx.Channel.SendMessageAsync($"{ctx.User.Username} used the emoji with name {messageToReact.Result.Emoji.Name}");
-            }
+            var message = new DiscordMessageBuilder()
+                .AddEmbed(new DiscordEmbedBuilder()
+                .WithColor(DiscordColor.Violet)
+                .WithTitle("Test embed"))
+                .AddComponents(button1, button2);
+
+            await ctx.Channel.SendMessageAsync(message);
         }
 
-        [Command("poll")] // rewrite as slash command
+        [Command("ancientprefixpolltest")] // rewrite as slash command
+        [RequirePermissions(DSharpPlus.Permissions.Administrator)]
+        [RequireGuild]
+        [Cooldown(1, 30, CooldownBucketType.Channel)]
         public async Task pollCommand(CommandContext ctx, string option1, string option2, string option3, string option4, [RemainingText] string pollTitle)
         {
             var interactivity = Program.Client.GetInteractivity();
-            var pollTime = TimeSpan.FromSeconds(10);
+            var pollTime = TimeSpan.FromSeconds(30);
 
             DiscordEmoji[] emojiOptions = { DiscordEmoji.FromName(Program.Client, ":one:"),
                                             DiscordEmoji.FromName(Program.Client, ":two:"),
@@ -171,7 +183,7 @@ namespace ZenithDiscordBot.commands
             int count3 = 0;
             int count4 = 0;
 
-            foreach(var emoji in totalReactions)
+            foreach (var emoji in totalReactions)
             {
                 if (emoji.Emoji == emojiOptions[0])
                 {
