@@ -22,7 +22,6 @@ namespace ZenithDiscordBot.commands.prefix
                 .WithTitle("Help Section")
                 .WithDescription("Please press a button to view its commands"))
                 .AddComponents(slashButton, prefixButton);
-            
 
             await ctx.Channel.SendMessageAsync(message);
         }

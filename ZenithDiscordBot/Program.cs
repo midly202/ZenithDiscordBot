@@ -10,6 +10,22 @@ using DSharpPlus.SlashCommands;
 using ZenithDiscordBot.commands.prefix;
 using ZenithDiscordBot.commands.slash;
 
+/* 
+ * TO-D0:
+ * 
+ * Discord + Github webhook thing
+ * 
+ * !help command that will only show up to the user that executed the command (ephemeral message)
+ * ^ maybe not possible but /help is possible
+ * 
+ * /help command that will only show up to the user that executed the command (ephemeral message)
+ * ^ done, need to edit button event handler to be the same
+ * 
+ * /blackjack command to play blackjack (ephemeral message)
+ * 
+ * /ticket commmand to make a ticket to communicate with the admins on
+*/
+
 namespace ZenithBot
 {
     public sealed class Program
