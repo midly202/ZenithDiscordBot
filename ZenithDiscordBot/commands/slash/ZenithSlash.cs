@@ -52,7 +52,6 @@ namespace ZenithDiscordBot.commands.slash
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embedMessage));
         }
 
-        // by no means perfect, but works. want to rewrite with buttons instead of emojis.
         [SlashCommand("poll", "Makes a poll and returns the results.")]
         public async Task pollSlashCommand(InteractionContext ctx, [Option("time", "Time to vote in seconds")] double time, [Option("title", "Title of the poll")] string title, [Option("option1", "First option")] string option1, [Option("option2", "Second option")] string option2, [Option("option3", "Third option")] string option3, [Option("option4", "Fourth option")] string option4)
         {

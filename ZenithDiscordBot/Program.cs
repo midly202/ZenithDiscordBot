@@ -15,6 +15,8 @@ using ZenithDiscordBot.commands.slash;
  * 
  * Requirements in slash commands (only admins, only in guilds, etc)
  * 
+ * Rewrite /poll to use buttons instead of emojis
+ * 
  * /blackjack command to play blackjack (ephemeral message)
  * 
  * /ticket commmand to make a ticket to communicate with the admins on
