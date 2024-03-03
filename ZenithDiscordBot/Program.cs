@@ -13,13 +13,7 @@ using ZenithDiscordBot.commands.slash;
 /* 
  * TO-D0:
  * 
- * Discord + Github webhook thing
- * 
- * !help command that will only show up to the user that executed the command (ephemeral message)
- * ^ maybe not possible but /help is possible
- * 
- * /help command that will only show up to the user that executed the command (ephemeral message)
- * ^ done, need to edit button event handler to be the same
+ * Requirements in slash commands (only admins, only in guilds, etc)
  * 
  * /blackjack command to play blackjack (ephemeral message)
  * 
@@ -81,31 +75,31 @@ namespace ZenithBot
             switch (e.Interaction.Data.CustomId)
             {
                 case "prefixButton":
+                    var embed1 = new DiscordEmbedBuilder()
+                        .WithTitle("Prefix commands")
+                        .AddField("!cardgame", "Draws a random card for both the user and the bot. Whoever's card is worth more, wins.")
+                        .WithColor(DiscordColor.DarkButNotBlack);
 
-                    await e.Interaction.DeferAsync();
-                    var prefixButtonEmbed = new DiscordEmbedBuilder
-                    {
-                        Color = DiscordColor.DarkButNotBlack,
-                        Title = "Prefix Commands",
-                        Description = "!help -> Shows a list of all the bot's commands. \n\n" +
-                                      "!whoami -> Returns information about your account. \n\n" +
-                                      "!cardgame -> Draws a random card for both the user and the bot. Whoever's card is worth more, wins. \n\n" +
-                                      "!poll -> Creates a poll with 4 options, results are gathered after 30 seconds. Syntax: !poll Option1 Option2 Option3 Option4 Poll Title"
-                    };
-                    await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(prefixButtonEmbed));
+                    var message1 = new DiscordInteractionResponseBuilder()
+                        .AddEmbed(embed1)
+                        .AsEphemeral(true);
+
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, message1);
                     break;
 
                 case "slashButton":
+                    var embed2 = new DiscordEmbedBuilder()
+                        .WithTitle("Slash commands")
+                        .AddField("/stalk", "Returns information about targeted user's account.")
+                        .AddField("/poll", "Makes a poll and returns the results.")
+                        .AddField("/caclulator", "Commands to do simple arithmatic.")
+                        .WithColor(DiscordColor.DarkButNotBlack);
 
-                    await e.Interaction.DeferAsync();
-                    var slashButtonEmbed = new DiscordEmbedBuilder
-                    {
-                        Color = DiscordColor.DarkButNotBlack,
-                        Title = "Slash Commands",
-                        Description = "/stalk -> Returns information about specified user's account. \n\n" +
-                                      "/calculator -> Group of commands that allow the user to perform simple arithmatic operations. "
-                    };
-                    await e.Interaction.EditOriginalResponseAsync(new DiscordWebhookBuilder().AddEmbed(slashButtonEmbed));
+                    var message2 = new DiscordInteractionResponseBuilder()
+                        .AddEmbed(embed2)
+                        .AsEphemeral(true);
+
+                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, message2);
                     break;
 
             }
