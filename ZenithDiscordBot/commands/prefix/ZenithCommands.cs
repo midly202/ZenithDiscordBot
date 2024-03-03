@@ -12,6 +12,7 @@ namespace ZenithDiscordBot.commands.prefix
     {
         [Command("supersecretembedtest1")]
         [RequireGuild]
+        [RequirePermissions(Permissions.Administrator)]
         public async Task embed1Command(CommandContext ctx)
         {
             var message = new DiscordMessageBuilder()

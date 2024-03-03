@@ -29,7 +29,7 @@ namespace ZenithDiscordBot.commands.slash
             await ctx.CreateResponseAsync(message);
         }
 
-        [SlashCommand("stalk", "Returns information about mentioned user.")]
+        [SlashCommand("stalk", "Returns information about targeted user.")]
         public async Task stalkSlashCommand(InteractionContext ctx, [Option("user", "username")] DiscordUser user)
         {
             var button = new DiscordButtonComponent(ButtonStyle.Primary, "button1", "Button");
