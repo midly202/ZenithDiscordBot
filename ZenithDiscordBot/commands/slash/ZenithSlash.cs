@@ -25,7 +25,7 @@ namespace ZenithDiscordBot.commands.slash
             var message = new DiscordInteractionResponseBuilder()
                 .AddEmbed(embed)
                 .AddComponents(prefixButton, slashButton)
-                .AsEphemeral(true);                ;
+                .AsEphemeral(true);
 
             await ctx.CreateResponseAsync(message);
         }
@@ -35,9 +35,8 @@ namespace ZenithDiscordBot.commands.slash
         {
             var button = new DiscordButtonComponent(ButtonStyle.Primary, "button1", "Button");
 
-            await ctx.DeferAsync();
             //var member = (DiscordMember)user;
-            var embedMessage = new DiscordEmbedBuilder
+            var embed = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Violet,
                 Title = "Account Information",
@@ -46,11 +45,14 @@ namespace ZenithDiscordBot.commands.slash
                               $"Account ID: {user.Id} \n" +
                               $"Account creation date: {user.CreationTimestamp} \n" +
                               $"Account PFP: {user.AvatarUrl} \n",
-                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"This command was executed by {ctx.User.Username}" },
-                
+                Footer = new DiscordEmbedBuilder.EmbedFooter { Text = $"This command was executed by {ctx.User.Username}" }, 
             };
 
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(embedMessage));
+            var message = new DiscordInteractionResponseBuilder()
+                .AddEmbed(embed)
+                .AsEphemeral(true);
+
+            await ctx.CreateResponseAsync(message);
         }
 
         [SlashCommand("poll", "Makes a poll and returns the results.")]

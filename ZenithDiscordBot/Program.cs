@@ -13,8 +13,6 @@ using ZenithDiscordBot.commands.slash;
 /* 
  * TO-D0:
  * 
- * Make /stalk ephemeral.
- * 
  * Add reaction counter to poll command so it says which option won, or if its a tie.
  * 
  * Requirements in slash commands (only admins, only in guilds, etc)
