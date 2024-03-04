@@ -2,6 +2,7 @@
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
+using System.Text.RegularExpressions;
 using ZenithBot;
 
 namespace ZenithDiscordBot.commands.slash
@@ -53,68 +54,94 @@ namespace ZenithDiscordBot.commands.slash
         }
 
         [SlashCommand("poll", "Makes a poll and returns the results.")]
-        public async Task pollSlashCommand(InteractionContext ctx, [Option("time", "Time to vote in seconds")] double time, [Option("title", "Title of the poll")] string title, [Option("option1", "First option")] string option1, [Option("option2", "Second option")] string option2, [Option("option3", "Third option")] string option3, [Option("option4", "Fourth option")] string option4)
+        public async Task pollSlashCommand(InteractionContext ctx, [Option("time", "Time to vote in seconds")] double time, [Option("title", "Poll title")] string title, [Option("options", "Poll options, seperate by comma (option1, option2)")] string options)
         {
             await ctx.DeferAsync();
             var interactivity = Program.Client.GetInteractivity();
             var pollTime = TimeSpan.FromSeconds(time);
 
-            DiscordEmoji[] emojiOptions = { DiscordEmoji.FromName(Program.Client, ":one:"),
-                                            DiscordEmoji.FromName(Program.Client, ":two:"),
-                                            DiscordEmoji.FromName(Program.Client, ":three:"),
-                                            DiscordEmoji.FromName(Program.Client, ":four:")};
-            
-            string optionsDescription = $"{emojiOptions[0]} | {option1} \n" +
-                                        $"{emojiOptions[1]} | {option2} \n" +
-                                        $"{emojiOptions[2]} | {option3} \n" +
-                                        $"{emojiOptions[3]} | {option4}";
+            string[] optionsArray = options.Split(',').Select(option => option.Trim()).ToArray();
+
+            var failedMessage = new DiscordEmbedBuilder
+            {
+                Title = "Error!",
+                Description = "Poll must have 2 to 9 options.",
+                Color = DiscordColor.DarkButNotBlack
+            };
+
+            var failedMessageWebhook = new DiscordWebhookBuilder()
+                .AddEmbed(failedMessage);
+
+            int optionCount = optionsArray.Length;
+            if (optionCount < 2 || optionCount > 9)
+            {
+                await ctx.EditResponseAsync(failedMessageWebhook);                                          // Failed Response
+                return;
+            }
+
+            DiscordEmoji[] emojiOptions = {
+                DiscordEmoji.FromName(Program.Client, ":one:"),
+                DiscordEmoji.FromName(Program.Client, ":two:"),
+                DiscordEmoji.FromName(Program.Client, ":three:"),
+                DiscordEmoji.FromName(Program.Client, ":four:"),
+                DiscordEmoji.FromName(Program.Client, ":five:"),
+                DiscordEmoji.FromName(Program.Client, ":six:"),
+                DiscordEmoji.FromName(Program.Client, ":seven:"),
+                DiscordEmoji.FromName(Program.Client, ":eight:"),
+                DiscordEmoji.FromName(Program.Client, ":nine:")
+    };
 
             var pollMessage = new DiscordEmbedBuilder
             {
                 Color = DiscordColor.Red,
                 Title = title,
-                Description = optionsDescription
+                Description = ""
             };
 
-            var sentPoll = await ctx.Channel.SendMessageAsync(embed: pollMessage);
-            foreach (var emoji in emojiOptions)
+            for (int i = 0; i < optionCount; i++)
             {
-                await sentPoll.CreateReactionAsync(emoji);
+                pollMessage.Description += $"{emojiOptions[i]} | {optionsArray[i]}\n";
+            }
+
+            var pollMessageWebhook = new DiscordWebhookBuilder()
+                .AddEmbed(pollMessage);
+
+            var sentPoll = await ctx.EditResponseAsync(pollMessageWebhook);                                 // Poll Message
+            for (int i = 0; i < optionCount; i++)
+            {
+                await sentPoll.CreateReactionAsync(emojiOptions[i]);
             }
 
             var totalReactions = await interactivity.CollectReactionsAsync(sentPoll, pollTime);
 
-            int count1 = 0;
-            int count2 = 0;
-            int count3 = 0;
-            int count4 = 0;
+            int[] voteCounts = new int[optionsArray.Length];
+            for (int i = 0; i < optionCount; i++)
+            {
+                voteCounts[i] = 0;
+            }
 
             foreach (var emoji in totalReactions)
             {
-                if (emoji.Emoji == emojiOptions[0])
+                for (int i = 0; i < optionCount; i++)
                 {
-                    count1++;
-                }
-                if (emoji.Emoji == emojiOptions[1])
-                {
-                    count2++;
-                }
-                if (emoji.Emoji == emojiOptions[2])
-                {
-                    count3++;
-                }
-                if (emoji.Emoji == emojiOptions[3])
-                {
-                    count4++;
+                    if (emoji.Emoji == emojiOptions[i])
+                    {
+                        voteCounts[i]++;
+                        break;
+                    }
                 }
             }
 
-            int totalVotes = count1 + count2 + count3 + count4;
-            string resultsDescription = $"{option1}: {count1} Votes \n" +
-                                        $"{option2}: {count2} Votes \n" +
-                                        $"{option3}: {count3} Votes \n" +
-                                        $"{option4}: {count4} Votes \n \n" +
-                                        $"Total votes: {totalVotes}";
+            int totalVotes = 0;
+            string resultsDescription = "";
+
+            for (int i = 0; i < optionCount; i++)
+            {
+                totalVotes += voteCounts[i];
+                resultsDescription += $"{optionsArray[i]}: {voteCounts[i]} Votes\n";
+            }
+
+            resultsDescription += $"\nTotal votes: {totalVotes}";
 
             var resultEmbed = new DiscordEmbedBuilder
             {
@@ -123,7 +150,8 @@ namespace ZenithDiscordBot.commands.slash
                 Description = resultsDescription
             };
 
-            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(resultEmbed));
+            await sentPoll.DeleteAllReactionsAsync();
+            await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(resultEmbed));                 // Results Message
         }
 
     }

@@ -13,9 +13,11 @@ using ZenithDiscordBot.commands.slash;
 /* 
  * TO-D0:
  * 
- * Requirements in slash commands (only admins, only in guilds, etc)
+ * Make /stalk ephemeral.
  * 
- * Rewrite /poll to use buttons instead of emojis
+ * Add reaction counter to poll command so it says which option won, or if its a tie.
+ * 
+ * Requirements in slash commands (only admins, only in guilds, etc)
  * 
  * /blackjack command to play blackjack (ephemeral message)
  * 
