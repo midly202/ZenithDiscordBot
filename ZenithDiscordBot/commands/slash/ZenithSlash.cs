@@ -2,7 +2,6 @@
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity.Extensions;
 using DSharpPlus.SlashCommands;
-using System.Text.RegularExpressions;
 using ZenithBot;
 
 namespace ZenithDiscordBot.commands.slash
@@ -91,7 +90,7 @@ namespace ZenithDiscordBot.commands.slash
                 DiscordEmoji.FromName(Program.Client, ":seven:"),
                 DiscordEmoji.FromName(Program.Client, ":eight:"),
                 DiscordEmoji.FromName(Program.Client, ":nine:")
-    };
+            };
 
             var pollMessage = new DiscordEmbedBuilder
             {
@@ -115,6 +114,8 @@ namespace ZenithDiscordBot.commands.slash
             }
 
             var totalReactions = await interactivity.CollectReactionsAsync(sentPoll, pollTime);
+
+            Console.WriteLine(totalReactions.ToString());
 
             int[] voteCounts = new int[optionsArray.Length];
             for (int i = 0; i < optionCount; i++)
@@ -154,6 +155,69 @@ namespace ZenithDiscordBot.commands.slash
 
             await sentPoll.DeleteAllReactionsAsync();
             await ctx.EditResponseAsync(new DiscordWebhookBuilder().AddEmbed(resultEmbed));                 // Results Message
+        }
+
+        [SlashCommand("pollDEBUG", "Makes a poll and returns the results.")]
+        public async Task pollDebugSlashCommand(InteractionContext ctx, [Option("time", "Time to vote in seconds")] double time, [Option("title", "Poll title")] string title, [Option("options", "Poll options, seperate by comma (option1, option2)")] string options)
+        {
+            await ctx.DeferAsync();
+            var interactivity = Program.Client.GetInteractivity();
+            var pollTime = TimeSpan.FromSeconds(time);
+
+            string[] optionsArray = options.Split(',').Select(option => option.Trim()).ToArray();
+
+            var failedMessage = new DiscordEmbedBuilder
+            {
+                Title = "Error!",
+                Description = "Poll must have 2 to 9 options.",
+                Color = DiscordColor.DarkButNotBlack
+            };
+
+            var failedMessageWebhook = new DiscordWebhookBuilder()
+                .AddEmbed(failedMessage);
+
+            int optionCount = optionsArray.Length;
+            if (optionCount < 2 || optionCount > 9)
+            {
+                await ctx.EditResponseAsync(failedMessageWebhook);                                          // Failed Response
+                return;
+            }
+
+            DiscordEmoji[] emojiOptions = {
+                DiscordEmoji.FromName(Program.Client, ":one:"),
+                DiscordEmoji.FromName(Program.Client, ":two:"),
+                DiscordEmoji.FromName(Program.Client, ":three:"),
+                DiscordEmoji.FromName(Program.Client, ":four:"),
+                DiscordEmoji.FromName(Program.Client, ":five:"),
+                DiscordEmoji.FromName(Program.Client, ":six:"),
+                DiscordEmoji.FromName(Program.Client, ":seven:"),
+                DiscordEmoji.FromName(Program.Client, ":eight:"),
+                DiscordEmoji.FromName(Program.Client, ":nine:")
+            };
+
+            var pollMessage = new DiscordEmbedBuilder
+            {
+                Color = DiscordColor.Red,
+                Title = title,
+                Description = ""
+            };
+
+            for (int i = 0; i < optionCount; i++)
+            {
+                pollMessage.Description += $"{emojiOptions[i]} | {optionsArray[i]}\n";
+            }
+
+            var pollMessageWebhook = new DiscordWebhookBuilder()
+                .AddEmbed(pollMessage);
+
+            var sentPoll = await ctx.EditResponseAsync(pollMessageWebhook);                                 // Poll Message
+            for (int i = 0; i < optionCount; i++)
+            {
+                await sentPoll.CreateReactionAsync(emojiOptions[i]);
+            }
+
+
+
         }
 
     }
