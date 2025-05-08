@@ -10,100 +10,112 @@ using DSharpPlus.SlashCommands;
 using ZenithDiscordBot.commands.prefix;
 using ZenithDiscordBot.commands.slash;
 
-/* 
- * TO-D0:
- * 
- * Add reaction counter to poll command so it says which option won, or if its a tie.
- * 
- * Requirements in slash commands (only admins, only in guilds, etc)
- * 
- * /blackjack command to play blackjack (ephemeral message)
- * 
- * /ticket commmand to make a ticket to communicate with the admins on
-*/
-
 namespace ZenithBot
 {
     public sealed class Program
     {
-        public static DiscordClient Client { get; private set; }
-        public static CommandsNextExtension Commands { get; private set; }
+        // Initialize as nullable and mark as initialized after creation
+        public static DiscordClient Client { get; private set; } = null!;
+        public static CommandsNextExtension Commands { get; private set; } = null!;
+
         static async Task Main(string[] args)
         {
-            var jsonReader = new ZenithDiscordBot.config.JSONReader();
-            await jsonReader.ReadJSON();
-
-            var discordConfig = new DiscordConfiguration()
+            // KILL DUPLICATES ON STARTUP
+            foreach (var proc in System.Diagnostics.Process.GetProcessesByName("ZenithDiscordBot"))
             {
-                Intents = DiscordIntents.All, 
-                Token = jsonReader.token,
-                TokenType = TokenType.Bot,
-                AutoReconnect = true
-            };
+                if (proc.Id != System.Diagnostics.Process.GetCurrentProcess().Id)
+                    proc.Kill();
+            }
 
-            Client = new DiscordClient(discordConfig);
-
-            Client.UseInteractivity(new InteractivityConfiguration()
+            try
             {
-                Timeout = TimeSpan.FromMinutes(2)
-            });
+                var jsonReader = new ZenithDiscordBot.config.JSONReader();
+                await jsonReader.ReadJSON();
 
-            Client.Ready += Client_Ready;
-            Client.ComponentInteractionCreated += ComponentInteractionHandler;
+                var discordConfig = new DiscordConfiguration()
+                {
+                    Intents = DiscordIntents.All, 
+                    Token = jsonReader.token,
+                    TokenType = TokenType.Bot,
+                    AutoReconnect = true
+                };
 
-            var commandsConfig = new CommandsNextConfiguration()
+                Client = new DiscordClient(discordConfig);
+
+                Client.UseInteractivity(new InteractivityConfiguration()
+                {
+                    Timeout = TimeSpan.FromMinutes(2)
+                });
+
+                Client.Ready += Client_Ready;
+                Client.ComponentInteractionCreated += ComponentInteractionHandler;
+
+                var commandsConfig = new CommandsNextConfiguration()
+                {
+                    StringPrefixes = new string[] { jsonReader.prefix },
+                    EnableMentionPrefix = true,
+                    EnableDms = true,
+                    EnableDefaultHelp = false,
+                };
+
+                Commands = Client.UseCommandsNext(commandsConfig);
+                Commands.CommandErrored += CommandHandler;
+
+                var slashCommandsConfiguration = Client.UseSlashCommands();
+
+                Commands.RegisterCommands<ZenithCommands>();
+                slashCommandsConfiguration.RegisterCommands<ZenithSlash>();
+                slashCommandsConfiguration.RegisterCommands<CalculatorSlash>();
+
+                await Client.ConnectAsync();
+                await Task.Delay(-1);
+            }
+            catch (Exception ex)
             {
-                StringPrefixes = new string[] { jsonReader.prefix },
-                EnableMentionPrefix = true,
-                EnableDms = true,
-                EnableDefaultHelp = false,
-            };
-
-            Commands = Client.UseCommandsNext(commandsConfig);
-            Commands.CommandErrored += CommandHandler;
-
-            var slashCommandsConfiguration = Client.UseSlashCommands();
-
-            Commands.RegisterCommands<ZenithCommands>();
-            slashCommandsConfiguration.RegisterCommands<ZenithSlash>();
-            slashCommandsConfiguration.RegisterCommands<CalculatorSlash>();
-
-            await Client.ConnectAsync();
-            await Task.Delay(-1);
+                Console.WriteLine($"An error occurred: {ex}");
+            }
         }
 
         private static async Task ComponentInteractionHandler(DiscordClient sender, ComponentInteractionCreateEventArgs e)
         {
-            switch (e.Interaction.Data.CustomId)
+            if (e.Interaction == null) return;
+
+            try
             {
-                case "prefixButton":
-                    var embed1 = new DiscordEmbedBuilder()
-                        .WithTitle("Prefix commands")
-                        .AddField("!cardgame", "Draws a random card for both the user and the bot. Whoever's card is worth more, wins.")
-                        .WithColor(DiscordColor.DarkButNotBlack);
+                switch (e.Interaction.Data.CustomId)
+                {
+                    case "prefixButton":
+                        var embed1 = new DiscordEmbedBuilder()
+                            .WithTitle("Prefix commands")
+                            .AddField("!cardgame", "Draws a random card for both the user and the bot. Whoever's card is worth more, wins.")
+                            .WithColor(DiscordColor.DarkButNotBlack);
 
-                    var message1 = new DiscordInteractionResponseBuilder()
-                        .AddEmbed(embed1)
-                        .AsEphemeral(true);
+                        var message1 = new DiscordInteractionResponseBuilder()
+                            .AddEmbed(embed1)
+                            .AsEphemeral(true);
 
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, message1);
-                    break;
+                        await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, message1);
+                        break;
 
-                case "slashButton":
-                    var embed2 = new DiscordEmbedBuilder()
-                        .WithTitle("Slash commands")
-                        .AddField("/stalk", "Returns information about targeted user's account.")
-                        .AddField("/poll", "Makes a poll and returns the results.")
-                        .AddField("/caclulator", "Commands to do simple arithmatic.")
-                        .WithColor(DiscordColor.DarkButNotBlack);
+                    case "slashButton":
+                        var embed2 = new DiscordEmbedBuilder()
+                            .WithTitle("Slash commands")
+                            .AddField("/stalk", "Returns information about targeted user's account.")
+                            .AddField("/poll", "Makes a poll and returns the results.")
+                            .AddField("/caclulator", "Commands to do simple arithmatic.")
+                            .WithColor(DiscordColor.DarkButNotBlack);
 
-                    var message2 = new DiscordInteractionResponseBuilder()
-                        .AddEmbed(embed2)
-                        .AsEphemeral(true);
+                        var message2 = new DiscordInteractionResponseBuilder()
+                            .AddEmbed(embed2)
+                            .AsEphemeral(true);
 
-                    await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, message2);
-                    break;
-
+                        await e.Interaction.CreateResponseAsync(InteractionResponseType.ChannelMessageWithSource, message2);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error handling interaction: {ex}");
             }
         }
 
@@ -115,8 +127,10 @@ namespace ZenithBot
 
                 foreach (var check in exception.FailedChecks)
                 {
-                    var coolDown = (CooldownAttribute)check;
-                    timeLeft = coolDown.GetRemainingCooldown(e.Context).ToString(@"hh\:mm\:ss");
+                    if (check is CooldownAttribute coolDown)
+                    {
+                        timeLeft = coolDown.GetRemainingCooldown(e.Context).ToString(@"hh\:mm\:ss");
+                    }
                 }
 
                 var coolDownMessage = new DiscordEmbedBuilder
@@ -126,11 +140,14 @@ namespace ZenithBot
                     Description = $"Time left: {timeLeft}"
                 };
 
-                await e.Context.Channel.SendMessageAsync(embed: coolDownMessage);
+                if (e.Context.Channel != null)
+                {
+                    await e.Context.Channel.SendMessageAsync(embed: coolDownMessage);
+                }
             }
         }
 
-        private static Task Client_Ready(DiscordClient sender, DSharpPlus.EventArgs.ReadyEventArgs args)
+        private static Task Client_Ready(DiscordClient sender, ReadyEventArgs args)
         {
             return Task.CompletedTask;
         }

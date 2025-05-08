@@ -46,12 +46,17 @@ namespace ZenithDiscordBot.commands.prefix
         {
             var embed = new DiscordEmbedBuilder
             {
-                Title = $"Hi {ctx.User.Username}.",
-                Description = "BOTTOM TEXT",
+                Title = $"Hi {ctx.User.Username}!",
+                Description = "You're a fag!",
                 Color = DiscordColor.DarkButNotBlack
             };
 
             var user = ctx.User as DiscordMember;
+            if (user == null)
+            {
+                await ctx.RespondAsync("User not found.");
+                return;
+            }
             await user.SendMessageAsync(embed: embed);
         }
 
