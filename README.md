@@ -1,8 +1,8 @@
-# ZenithBot
+# 🤖 ZenithBot
 
 A simple Discord bot with user lookup and calculator functionality.
 
-## Features
+## 🔧 Features
 
 - **`!cardgame`**  
   Draws a random card for both you and the bot. The player with the higher-value card wins.
